@@ -42,7 +42,10 @@ app.use("/User", UserRoute)
 app.use(passport.initialize())
 app.use(passport.session());
 require("./OAuth")
-
+app.get("/",(req,res)=>{
+  console.log("Home")
+  res.send("Home")
+})
 
 app.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }))
 app.use("/User", UserRoute)
@@ -89,7 +92,7 @@ app.post("/block", async (req, res) => {
   }
 })
 
-app.listen(process.env.port || 3030, async () => {
+app.listen(8080, async () => {
   try {
     await connection;
     console.log("connected to db");
