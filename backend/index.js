@@ -86,7 +86,7 @@ app.post("/block", async (req, res) => {
   }
 })
 
-app.listen(process.env.port, async () => {
+app.listen(process.env.port || 3030, async () => {
   try {
     await connection;
     console.log("connected to db");
