@@ -7,8 +7,11 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy
 const session = require('express-session');
 const { authentication } = require("./middleware/Authentication")
 const { createClient } = require("redis");
-const client = createClient();
-
+const client = createClient("redis-cli -u redis://default:pAZIQGIYzeoDcfPm3PKrPU0gmPWpMeQo@redis-11856.c301.ap-south-1-1.ec2.cloud.redislabs.com:11856");
+//
+client.on('ready', function () {
+  console.log("Redis is ready");
+});
 client.on('error', err => console.log('Redis Client Error', err));
 const { authorise } = require("./middleware/Authorization")
 const { UserModel } = require("./models/user.model")
@@ -47,7 +50,7 @@ app.use("/User", UserRoute)
 app.get("/google/callback", passport.authenticate("google", { failureRedirect: "/login" }), async (req, res) => {
   const { id, displayName, emails } = req.user;
   // let usr= await UserModel.find({ "email": req.user.emails[0].value })
-  const users = new UserModel({ firstName:req.user._json.given_name , lastName:req.user._json.family_name, mobileNo:null , email:req.user._json.email , password:"SignUp with Google OAuth" , role:"User" })
+  const users = new UserModel({ firstName: req.user._json.given_name, lastName: req.user._json.family_name, mobileNo: null, email: req.user._json.email, password: "SignUp with Google OAuth", role: "User" })
   await users.save()
 
   let usr = await UserModel.find({ "email": req.user._json.email })
