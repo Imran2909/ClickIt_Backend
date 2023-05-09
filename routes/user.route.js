@@ -48,7 +48,7 @@ UserRoute.post("/login", async (req, res) => {
     if (usr.length > 0) {
       bcrypt.compare(password, usr[0].password, async (err, result) => {
         if (result === true) {
-          const token = jwt.sign({ userId: usr[0]._id }, process.env.SecretKey, {
+          const token = jwt.sign({ userId: usr[0]._id }, "imran", {
             expiresIn: "1h",
           });
           client.set("token", token);
@@ -61,7 +61,7 @@ UserRoute.post("/login", async (req, res) => {
           res.send(err.message);
           if (err) res.send(err);
           else if (result) {
-            const token = jwt.sign({ userId: usr[0]._id }, process.env.SecretKey, {
+            const token = jwt.sign({ userId: usr[0]._id }, "imran" , {
               expiresIn: "10h"
             });
             res

@@ -20,7 +20,7 @@ const authentication = async (req, res, next) => {
         if (blocked.length > 0) {
             res.end("Your Login expired, Please login again")
         }
-        jwt.verify(token, process.env.SecretKey, async (err, decoded) => {
+        jwt.verify(token, "imran", async (err, decoded) => {
             if (decoded) {
                 req.body.user = decoded.userId
                 req.user = await UserModel.find({ _id: decoded.userId })
