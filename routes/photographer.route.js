@@ -5,17 +5,21 @@ const jwt = require("jsonwebtoken")
 require("dotenv").config
 const {appointmentModel} = require("../models/appointment.model")
 const {UserModel} = require("../models/user.model")
-
+const {photoauth}=require("../middleware/photo.authantication")
 const { photoModel } = require("../models/photographer.model");
+const {authorise}=require("../middleware/Authorization.js")
 photographyRouter.use(express.json());
 
 
+
 // GET REQUEST
-photographyRouter.get("/", async (req, res) => {
+photographyRouter.get("/",async (req, res) => {
   const photo = await photoModel.find(req.query);
   res.send({ data: photo });
 });
-photographyRouter.get("/:id", async (req, res) => {
+
+
+photographyRouter.get("/:id",photoauth, async (req, res) => {
   const id = req.params.id;
   try {
     const photographer = await photoModel.findOne({_id: id});
@@ -55,7 +59,7 @@ photographyRouter.post("/login",async(req,res)=>{
     const hashedpwd = user?.pass
     bcrypt.compare(pass, hashedpwd, function(err, result) {
         if(result){
-            const token = jwt.sign({userID : user._id},"onesecret", {expiresIn : "60m"})
+            const token = jwt.sign({userID : user._id,role: user.role},"onesecret", {expiresIn : "60m"})
             const refresh_token = jwt.sign({userID : user._id},"twosecret", {expiresIn : "1d"})
             res.send({msg : "login successfull", token, user, refresh_token})
         }
@@ -88,7 +92,7 @@ photographyRouter.post("/create", async (req, res) => {
 
 
 // DELETE REQUEST
-photographyRouter.delete("/delete/:id", async (req, res) => {
+photographyRouter.delete("/delete/:id",photoauth, async (req, res) => {
   const photoid = req.params.id;
   await photoModel.findByIdAndDelete({ _id: photoid });
   res.send("Deleted the note");
@@ -96,16 +100,15 @@ photographyRouter.delete("/delete/:id", async (req, res) => {
 
 
 // PATCH REQUEST
-photographyRouter.patch("/update/:id", async (req, res) => {
+photographyRouter.patch("/update/:id",photoauth, async (req, res) => {
   let Id = req.params.id;
   const payload = req.body;
   // console.log(payload)
   try {
     const photo = await photoModel.findByIdAndUpdate({ _id: Id }, payload);
-    console.log(photo);
-    res.send({ msg: "patch req done" });
+   return res.send({ msg: "Details updated" ,payload});
   } catch (err) {
-    console.log(err);
+    return res.status(400).send(err.message)
   }
 });
 

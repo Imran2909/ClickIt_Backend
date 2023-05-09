@@ -8,6 +8,7 @@ const { createClient } = require("redis");
 const client = createClient();
 client.on('error', err => console.log('Redis Client Error', err));
 client.connect();
+require("dotenv").config();
 
 const authentication = async (req, res, next) => {
     
@@ -19,11 +20,10 @@ const authentication = async (req, res, next) => {
         if (blocked.length > 0) {
             res.end("Your Login expired, Please login again")
         }
-        jwt.verify(token, 'imran', async (err, decoded) => {
+        jwt.verify(token, process.env.SecretKey, async (err, decoded) => {
             if (decoded) {
                 req.body.user = decoded.userId
                 req.user = await UserModel.find({ _id: decoded.userId })
-                console.log("Next")
                 next()
             }
             else {

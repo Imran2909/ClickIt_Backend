@@ -7,13 +7,12 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy
 const session = require('express-session');
 const { authentication } = require("./middleware/Authentication")
 const { createClient } = require("redis");
-const client = createClient("redis://default:pAZIQGIYzeoDcfPm3PKrPU0gmPWpMeQo@redis-11856.c301.ap-south-1-1.ec2.cloud.redislabs.com:11856");
-//
+const client = createClient(process.env.RedisURL);
 client.on('ready', function () {
   console.log("Redis is ready");
 });
 client.on('error', err => console.log('Redis Client Error', err));
-const { authorise } = require("./middleware/Authorization")
+// const { authorise } = require("../middleware/Authorization")
 const { UserModel } = require("./models/user.model")
 const { photographyRouter } = require("./routes/photographer.route");
 const { UserRoute } = require("./routes/user.route");
@@ -33,7 +32,7 @@ app.use(session({
 
 
 app.use(express.json());
-app.use("/photographer", photographyRouter);
+app.use("/photographer",photographyRouter);
 app.use("/appointment", appointmentRouter)
 
 
@@ -42,10 +41,7 @@ app.use("/User", UserRoute)
 app.use(passport.initialize())
 app.use(passport.session());
 require("./OAuth")
-app.get("/",(req,res)=>{
-  console.log("Home")
-  res.send("Home")
-})
+
 
 app.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }))
 app.use("/User", UserRoute)
@@ -53,7 +49,7 @@ app.use("/User", UserRoute)
 app.get("/google/callback", passport.authenticate("google", { failureRedirect: "/login" }), async (req, res) => {
   const { id, displayName, emails } = req.user;
   // let usr= await UserModel.find({ "email": req.user.emails[0].value })
-  const users = new UserModel({ firstName: req.user._json.given_name, lastName: req.user._json.family_name, mobileNo: null, email: req.user._json.email, password: "SignUp with Google OAuth", role: "User" })
+  const users = new UserModel({ firstName:req.user._json.given_name , lastName:req.user._json.family_name, mobileNo:00000 , email:req.user._json.email , password:"SignUp with Google OAuth" , role:"User" })
   await users.save()
 
   let usr = await UserModel.find({ "email": req.user._json.email })
@@ -69,10 +65,10 @@ app.get("/google/callback", passport.authenticate("google", { failureRedirect: "
 })
 
 
+
 app.use(authentication)
 
-
-app.get("/user", async (req, res) => {
+app.get("/users",async (req, res) => {
   try {
     const data = await UserModel.find()
     res.send(data)
@@ -92,7 +88,7 @@ app.post("/block", async (req, res) => {
   }
 })
 
-app.listen(8080, async () => {
+app.listen(process.env.port, async () => {
   try {
     await connection;
     console.log("connected to db");
